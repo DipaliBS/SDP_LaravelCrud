@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use App\Models\ProductPurchaseHistory;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -114,4 +116,24 @@ class ProductController extends Controller
     //     $product->delete();
     //     return redirect()->route('products.index', $product->id)->with('success', 'Product deleted successfully');
     // }
+
+    public function getTopSoldProducts(){
+        $topSoldProducts = ProductPurchaseHistory::select(
+            'product_purchase_history.productid',
+            'product.name as product_name',
+            'user.name as username',
+            DB::raw('COUNT(product_purchase_history.productid) as purchase_count')
+        )
+        ->join('product', 'product.id', '=', 'product_purchase_history.productid')
+        ->join('user', 'user.id', '=', 'product_purchase_history.userid')
+        ->where('product_purchase_history.purchase_status', 'completed') // Only count completed purchases
+        ->groupBy('product_purchase_history.productid', 'product.name', 'user.name')
+        ->orderByDesc('purchase_count') // Sort by max sold
+        ->limit(10) // Fetch top 10 most sold products
+        ->get();
+        return response()->json([
+            'status' => 'success',
+            'data' => $topSoldProducts
+        ]);
+    }
 }

@@ -45,4 +45,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // public function Products(){        
+    //     $UserProducts = $this->hasMany(Purchased:class)->orderBy('purchased_date', desc)->limit(10);
+    //     return json_encode($UserProducts);
+    // }
 }
